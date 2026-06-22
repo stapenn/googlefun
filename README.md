@@ -1,5 +1,6 @@
 ## Что нужно поменять
 
+
 - `SMTP_USER` — почта, от имени которой отправляем.
 - `SMTP_PASSWORD` — пароль приложения, генерируется вручную, в настройках почты [google](https://myaccount.google.com/apppasswords) 
 - `MAIL_TO` — почта, куда приходят письма.
@@ -9,6 +10,7 @@
 - `SMTP_PORT` — порт SMTP. (for google: port: 587)
 
 ## Деплой
+
 
 ```bash
 gcloud functions deploy helloHttp \
