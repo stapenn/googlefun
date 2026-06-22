@@ -9,6 +9,7 @@
 - `SMTP_PORT` — порт SMTP. (for google: port: 587)
 
 ## Деплой
+
 ```bash
 gcloud functions deploy helloHttp \
   --gen2 \
