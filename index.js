@@ -1,37 +1,53 @@
 import { http } from "@google-cloud/functions-framework";
 import nodemailer from "nodemailer";
 
+const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASSWORD,
+  },
+});
+
 http("helloHttp", async (req, res) => {
   try {
-    const { name, email, message, choice } = req.body || {};
+    const choice = req.body?.choice || "unknown";
 
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT || 587),
-      secure: process.env.SMTP_SECURE === "true",
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD,
-      },
-    });
+    const ip =
+      req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "unknown";
+
+    const userAgent = req.headers["user-agent"] || "unknown";
+    const now = new Date().toISOString();
 
     await transporter.sendMail({
       from: process.env.SMTP_USER,
       to: process.env.MAIL_TO,
-      subject: "Новая заявка с формы",
+      subject: `Новый заход (${choice})`,
       text: `
-Имя: ${name || "-"}
-Email: ${email || "-"}
-Сообщение: ${message || "-"}
-Выбор: ${choice || "-"}
+Время: ${now}
 
-Время: ${new Date().toISOString()}
-`,
+Выбор: ${choice}
+
+IP:
+${ip}
+
+User-Agent:
+${userAgent}
+      `,
     });
 
-    res.json({ success: true });
+    res.json({
+      success: true,
+      choice,
+    });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false, error: error.message });
+
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
   }
 });

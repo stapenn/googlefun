@@ -2,7 +2,8 @@ name: Deploy Cloud Function
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
@@ -10,22 +11,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-      - uses: google-github-actions/auth@v2
+      - name: Auth Google Cloud
+        uses: google-github-actions/auth@v2
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
-      - uses: google-github-actions/setup-gcloud@v2
+      - name: Setup gcloud
+        uses: google-github-actions/setup-gcloud@v2
 
-      - name: Deploy function
+      - name: Deploy Cloud Function
         run: |
           gcloud functions deploy ${{ vars.FUNCTION_NAME }} \
             --gen2 \
             --runtime=nodejs22 \
             --region=${{ vars.FUNCTION_REGION }} \
             --source=. \
-            --entry-point=${{ vars.FUNCTION_ENTRY_POINT }} \
+            --entry-point=helloHttp \
             --trigger-http \
             --allow-unauthenticated \
-            --set-env-vars SMTP_HOST=${{ secrets.SMTP_HOST }},SMTP_PORT=${{ secrets.SMTP_PORT }},SMTP_SECURE=${{ secrets.SMTP_SECURE }},SMTP_USER=${{ secrets.SMTP_USER }},SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }},MAIL_TO=${{ secrets.MAIL_TO }}
+            --set-env-vars SMTP_USER=${{ secrets.SMTP_USER }},SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }},MAIL_TO=${{ vars.MAIL_TO }}
