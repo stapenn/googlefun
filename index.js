@@ -19,16 +19,23 @@ http("helloHttp", async (req, res) => {
       req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "unknown";
 
     const userAgent = req.headers["user-agent"] || "unknown";
+
     const now = new Date().toISOString();
+
+    const mailTitle = process.env.MAIL_TITLE || "New Website Event";
+
+    const mailSubject = process.env.MAIL_SUBJECT || "Website Notification";
 
     await transporter.sendMail({
       from: process.env.SMTP_USER,
       to: process.env.MAIL_TO,
-      subject: `Новый заход (${choice})`,
+      subject: `${mailSubject} (${choice})`,
       text: `
-Время: ${now}
+${mailTitle}
 
-Выбор: ${choice}
+Time: ${now}
+
+Choice: ${choice}
 
 IP:
 ${ip}
@@ -41,6 +48,7 @@ ${userAgent}
     res.json({
       success: true,
       choice,
+      timestamp: now,
     });
   } catch (error) {
     console.error(error);
