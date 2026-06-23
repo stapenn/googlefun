@@ -112,3 +112,123 @@ Enable the following APIs:
 * Artifact Registry API
 
 Wait a few minutes for the changes to propagate before running the deployment workflow.
+
+## Optional Security
+
+By default, the deployed function is publicly accessible via its URL.
+
+If you want to restrict access, you can add one of the following protection methods.
+
+### Option 1: Secret Token (Recommended)
+
+Store a secret token in GitHub Secrets:
+
+Settings → Secrets and variables → Actions → Secrets
+
+Create:
+
+FORM_TOKEN
+
+Example:
+
+FORM_TOKEN=8df91bcb8e9d4b1ba7a2d15c91f01c77
+
+### Repository Changes
+
+#### 1. Update index.js
+
+Add the following validation before processing the request:
+
+```javascript
+const expectedToken = process.env.FORM_TOKEN;
+const receivedToken = req.headers["x-form-token"];
+
+if (!expectedToken || receivedToken !== expectedToken) {
+  return res.status(403).json({
+    success: false,
+    error: "Forbidden",
+  });
+}
+```
+
+#### 2. Update deploy.yml
+
+Add FORM_TOKEN to environment variables:
+
+```yaml
+FORM_TOKEN=${{ secrets.FORM_TOKEN }}
+```
+
+Example:
+
+```yaml
+--set-env-vars "SMTP_USER=${{ secrets.SMTP_USER }},SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }},MAIL_TO=${{ vars.MAIL_TO }},MAIL_TITLE=${{ vars.MAIL_TITLE }},MAIL_SUBJECT=${{ vars.MAIL_SUBJECT }},FORM_TOKEN=${{ secrets.FORM_TOKEN }}"
+```
+
+#### 3. Frontend Changes
+
+Include the token in every request:
+
+```javascript
+fetch(FUNCTION_URL, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "x-form-token": "YOUR_SECRET_TOKEN"
+  },
+  body: JSON.stringify({
+    choice: "1"
+  })
+});
+```
+
+### Advantages
+
+* Very easy to implement
+* No additional services required
+* Prevents accidental or unauthorized requests
+
+### Limitations
+
+* The token can be extracted from frontend code
+* Not suitable as the only protection mechanism for sensitive applications
+
+---
+
+### Other Security Options
+
+#### Google reCAPTCHA
+
+Requires frontend integration and token verification inside the Cloud Function.
+
+Good protection against bots and spam.
+
+#### Cloudflare Turnstile
+
+Modern alternative to reCAPTCHA.
+
+Provides bot protection with better privacy and user experience.
+
+#### Firebase Authentication
+
+Allows only authenticated users to access the function.
+
+Suitable for private dashboards and internal applications.
+
+#### Rate Limiting
+
+Limits the number of requests from a single IP address within a given time period.
+
+Can be combined with any of the methods above.
+
+---
+
+### Recommended Setup
+
+For most contact forms the following combination is sufficient:
+
+* Secret Token
+* Cloudflare Turnstile (or Google reCAPTCHA)
+* Rate Limiting
+
+This setup provides a good balance between simplicity and security.
