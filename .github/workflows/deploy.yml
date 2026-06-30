@@ -32,4 +32,4 @@ jobs:
             --entry-point=helloHttp \
             --trigger-http \
             --allow-unauthenticated \
-            --set-env-vars "SMTP_USER=${{ secrets.SMTP_USER }},SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }},MAIL_TO=${{ vars.MAIL_TO }},MAIL_TITLE=${{ vars.MAIL_TITLE }},MAIL_SUBJECT=${{ vars.MAIL_SUBJECT }}"
+            --set-env-vars "SMTP_USER=${{ secrets.SMTP_USER }},SMTP_PASSWORD=${{ secrets.SMTP_PASSWORD }},SMTP_HOST=${{ vars.SMTP_HOST }},SMTP_PORT=${{ vars.SMTP_PORT }},MAIL_TO=${{ vars.MAIL_TO }},MAIL_TITLE=${{ vars.MAIL_TITLE }},MAIL_SUBJECT=${{ vars.MAIL_SUBJECT }},RECAPTCHA_SECRET_KEY=${{ secrets.RECAPTCHA_SECRET_KEY }},RECAPTCHA_MIN_SCORE=${{ vars.RECAPTCHA_MIN_SCORE }},RECAPTCHA_EXPECTED_ACTION=${{ vars.RECAPTCHA_EXPECTED_ACTION }}"
